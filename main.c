@@ -17,7 +17,7 @@ long final[128];
 int i;
 void main()
 {
-    PLL_Init(80);
+    PLL_Init(60);
     SDRAM_init();
     INTR_init();
     InitCTR();

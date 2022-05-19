@@ -8,7 +8,7 @@ void interrupt XINT2()
 {
 	scanKey=GetKey(); //Getkey函数获得键盘值并放入该变量中，以做消抖处理
 	scanKey&=0x0ff; //获取键盘值
-	Keyshift();
+//	Keyshift();
 }
 
 void INTR_init( void )
