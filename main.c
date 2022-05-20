@@ -13,7 +13,7 @@ void wait( unsigned int cycles );
 void EnableAPLL( );
 extern short sample[256];
 long final[128];
-int final_phase[128];
+double final_phase[128];
 int finally_phase[100];
 long finally[100];
 int i;
@@ -23,6 +23,7 @@ int freq_max;
 int index,result_max;
 long show_data_x,show_data_y;
 double show_data_x1,show_data_y1;
+int insert_flag=0,start_freq=0,insert_flag_freq_change=0;
 int freq_change_flag=0,magn_change_level=3,magn_change_flag=0,flag_magn_phase_max=0,display_reset_flag=0;
 int wan,qian,bai,shi,ge;
 double show_data_y1;
@@ -57,7 +58,7 @@ void main()
                 display_reset_flag=0;
             }
             for(i=0;i<100;i++){
-                show_data_x=(long)(0.053333333*(freq_min+(freq_max-freq_min)*i));
+                show_data_x=(long)(5.3333333*(freq_min+(freq_max-freq_min)*1.0*i/100));
                 show_data_y=(long)(final[show_data_x]*144/18000);
                 show_data_y/=magn_change_level;
                 if(show_data_y<0) show_data_y=0;
@@ -67,15 +68,24 @@ void main()
             Delay(100);//延迟减缓闪屏,增强视觉体验
             if(freq_change_flag){
                 update_show_num();
+                freq_max=freq_min+magn_flag*5;
                 freq_change_flag=0;
             }
             if(magn_change_flag){
                 update_value_level();
                 magn_change_flag=0;
             }
+
             LCDClear();
             for(i=0;i<100;i++){
                 ShowPoint_magn(16+i,8+finally[i]);
+            }
+            if(insert_flag_freq_change){
+                freq_min=start_freq;
+                magn_flag=1;
+                update_show_num();
+                freq_max=freq_min+magn_flag*5;
+                insert_flag_freq_change=0;
             }
                break;
         case  1://显示相位谱
@@ -86,12 +96,13 @@ void main()
             }
             final_phase[0]=0;
             for(i=1;i<128;i++){
-                final_phase[i]=(int)((atan(sample[2*i]/sample[2*i+1])+1.571)*16.55);
+                /*final_phase[i]=(int)((atan(sample[2*i]/sample[2*i+1])+1.571)*16.55);*/
+                final_phase[i]=(atan(sample[2*i]*1.0/sample[2*i+1]));
             }
             for(i=0;i<100;i++){
                 show_data_x=(long)(1.066666666666*i);
-                show_data_y1=(final_phase[show_data_x]);
-                finally_phase[i]=(int)show_data_y1;
+                show_data_y1=((final_phase[show_data_x]+1.571)*16.55);
+                finally_phase[i]=(int)(show_data_y1);
             }
             LCDClear();
             for(i=0;i<100;i++){
