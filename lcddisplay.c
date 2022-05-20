@@ -1,7 +1,7 @@
 #include "ICETEK-VC5509-EDU.h"
 #include "WordLibrary.h"//字符库
 #include "lcddisplay.h"
-#define LCDDELAY 2
+#define LCDDELAY 1
 void lcdInit()//初始化LCD屏幕
 {
     TurnOnLCD();                // 打开显示
@@ -500,5 +500,37 @@ void LCDFull_all()
         LCDCMD(LCDCMDVERADDRESS);
         for ( j=0;j<64;j++ )
             LCDWriteRight(0xff);
+    }
+}
+void showcharacter_h(int x,int y,int length,int start)
+{
+    int k,i,j,Left_or_Right;
+    for(k=0;k<length;k++)
+    {
+        for(i=0;i<2;i++)
+        {
+            CTRLCDCMDR=LCDCMDPAGE+i+x;   //选页
+            Delay(1);
+            CTRLCDCR=0;
+            Delay(1);
+            Left_or_Right=k*16+y;           //为让左右屏代码一样
+            if(Left_or_Right<64)
+               CTRLCDCMDR=LCDCMDVERADDRESS+k*16+y;    // 起始列
+            else
+               CTRLCDCMDR=LCDCMDVERADDRESS+k*16+y-64; // 起始列
+            Delay(1);
+               CTRLCDCR=0;
+               Delay(1);
+            for(j=0;j<16;j++)
+            {
+               if(Left_or_Right<64)//如果列号小于64说明在左半屏显示
+                    CTRLCDLCR =  character[i+2*k+2*start][j];//所以调用左半屏的写入函数
+               else//否则就在右半屏显示
+                    CTRLCDRCR =  character[i+2*k+2*start][j];
+               Delay(1);
+               CTRLCDCR=0;
+               Delay(1);
+            }
+        }
     }
 }

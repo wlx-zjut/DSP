@@ -20,9 +20,11 @@ int i;
 int magn_flag=1;
 int freq_min=0,value_max=90;
 int freq_max;
+int index,result_max;
 long show_data_x,show_data_y;
 double show_data_x1,show_data_y1;
 int freq_change_flag=0,magn_change_level=3,magn_change_flag=0,flag_magn_phase_max=0,display_reset_flag=0;
+int wan,qian,bai,shi,ge;
 double show_data_y1;
 void main()
 {
@@ -96,7 +98,38 @@ void main()
                 /*ShowPoint(35+finally_phase[i],16+i);*/
                 ShowPoint(9+finally_phase[i],16+i);
             }
+            break;
 
+
+        case  2://显示最大频率点
+            if(display_reset_flag){
+                LCDCLS();
+                showcharacter_h(2,0,3,0);
+                showcharacter_h(4,70,1,3);
+                display_reset_flag=0;
+            }
+            index = 0;              //假设a[0]为最大值，index存储最大值下标；
+            for(i = 1; i < 128; i++){
+              if(final[i]>final[index]){   //如果a[i]比假设的的最大值还大，
+                index = i;           //再假设a[i]是新的最大值；
+              }
+            }
+            result_max=(int)(index*187.5);
+            wan=result_max/10000;
+            qian=(result_max/1000)%10;
+            bai=(result_max/100)%10;
+            shi=(result_max/10)%10;
+            ge=result_max%10;
+            ShowNum(35,5,wan);
+            Delay(100);
+            ShowNum(40,5,qian);
+            Delay(100);
+            ShowNum(45,5,bai);
+            Delay(100);
+            ShowNum(50,5,shi);
+            Delay(100);
+            ShowNum(55,5,ge);
+            Delay(100);
             break;
         }
 
