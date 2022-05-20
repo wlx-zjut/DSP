@@ -28,3 +28,4 @@ void LCDClear();
 void LCDFull_all();
 void ShowPoint_magn(int i,int j);
 void update_value_level();
+void Init_phase();

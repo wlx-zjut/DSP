@@ -4,7 +4,7 @@
 //#include "5509.h"
 int scanKey=0;
 unsigned int ncode;
-extern int magn_flag,magn_change_level,magn_change_flag;
+extern int magn_flag,magn_change_level,magn_change_flag,display_reset_flag,flag_magn_phase_max;
 extern int freq_max,freq_min,value_max,freq_change_flag;
 void interrupt XINT2()
 {
@@ -21,17 +21,21 @@ void interrupt XINT2()
             freq_max=freq_min+magn_flag*5;
             freq_change_flag=1;
     }
-    if(scanKey==2  &&  magn_change_level>1){
+    if(scanKey==8  &&  magn_change_level>1){
             magn_change_level--;
             value_max=magn_change_level*30;
             magn_change_flag=1;
         }
-    if(scanKey==8  &&  magn_change_level<3 ){
+    if(scanKey==2  &&  magn_change_level<3 ){
             magn_change_level++;
             value_max=magn_change_level*30;
             magn_change_flag=1;
     }
-
+    if(scanKey==1){
+        flag_magn_phase_max++;
+        if(flag_magn_phase_max==3) flag_magn_phase_max=0;
+        display_reset_flag=1;
+    }
 
 }
 

@@ -1,7 +1,7 @@
 #include "ICETEK-VC5509-EDU.h"
 #include "WordLibrary.h"//字符库
 #include "lcddisplay.h"
-#define LCDDELAY 1
+#define LCDDELAY 2
 void lcdInit()//初始化LCD屏幕
 {
     TurnOnLCD();                // 打开显示
@@ -98,15 +98,17 @@ void ShowPoint_magn(int i,int j)             //画单点函数
 {
     int k;
     for(k=1;k<j/8;k++){
-        setpage(k);
+
         if(i<64)
         {
+            setpage(k);
             setcolumn(i);
             printleft(0xFF);
             Delay(LCDDELAY);
         }
         else
         {
+            setpage(k);
             setcolumn(i-64);
             printright(0xFF);
             Delay(LCDDELAY);
@@ -351,6 +353,51 @@ void update_value_level(){
         Show_123();
         break;
     }
+}
+void Init_phase()
+{
+    int i,j;
+    for(i = 0;i<8;i++)
+                {
+                    CTRLCDCMDR=LCDCMDPAGE+i;   //选页
+                    Delay(1);
+                    CTRLCDCR=0;
+                    Delay(1);
+                    for(j=0;j<64;j++)
+                    {
+                       CTRLCDCMDR=LCDCMDVERADDRESS+j;    // 起始列
+                       Delay(1);
+                   //    Delay(LCDDELAY);
+                       CTRLCDCR=0;
+                       Delay(1);
+                       CTRLCDLCR =  phaseL[i][j];
+                       Delay(1);
+                   //    Delay(LCDDELAY);
+                       CTRLCDCR=0;
+                       Delay(1);
+                   //    Delay(LCDDELAY);
+                    }
+                }
+        for(i = 0;i<8;i++)
+            {
+                CTRLCDCMDR=LCDCMDPAGE+i;   //选页
+                Delay(1);
+                CTRLCDCR=0;
+                for(j=0;j<64;j++)
+                {
+                   CTRLCDCMDR=LCDCMDVERADDRESS+j;    // 起始列
+                   Delay(1);
+                  // Delay(LCDDELAY);
+                   CTRLCDCR=0;
+                  Delay(1);
+                   CTRLCDRCR =  graR[i][j];//所以调用右半屏的写入函数
+                   Delay(1);
+                  // Delay(LCDDELAY);
+                   CTRLCDCR=0;
+                   Delay(1);
+                 //  Delay(LCDDELAY);
+                }
+            }
 }
 
 void update_show_num(){

@@ -13,13 +13,17 @@ void wait( unsigned int cycles );
 void EnableAPLL( );
 extern short sample[256];
 long final[128];
+int final_phase[128];
+int finally_phase[100];
 long finally[100];
 int i;
 int magn_flag=1;
 int freq_min=0,value_max=90;
 int freq_max;
 long show_data_x,show_data_y;
-int freq_change_flag=0,magn_change_level=3,magn_change_flag=0;
+double show_data_x1,show_data_y1;
+int freq_change_flag=0,magn_change_level=3,magn_change_flag=0,flag_magn_phase_max=0,display_reset_flag=0;
+double show_data_y1;
 void main()
 {
     PLL_Init(24);
@@ -34,40 +38,68 @@ void main()
     Show_369();
     update_value_level();
     update_show_num();
-/*    ShowPoint(40,16+);
-    while(1);*/
     while(1){
         AIC23_Mixer();
         AIC23_Mixer();
         rfft(sample,256,SCALE);
-        for(i=0;i<128;i++){
+        final[0]=sample[0];
+        for(i=1;i<128;i++){
            final[i]=sqrt((long)sample[2*i]*(long)sample[2*i]+(long)sample[2*i+1]*(long)sample[2*i+1]);
         }
-        for(i=0;i<100;i++){
-            show_data_x=(long)(0.053333333*(freq_min+(freq_max-freq_min)*i));
-            show_data_y=(long)(final[show_data_x]*144/18000);
-            show_data_y/=magn_change_level;
-                //if(show_data_y<=0) show_data_y=0;
-            finally[i]=show_data_y;
-            //ShowPoint(8+show_data_y,16+i);
-        }
-        Delay(100);//延迟减缓闪屏,增强视觉体验
-        if(freq_change_flag){
-            update_show_num();
-            freq_change_flag=0;
+        switch(flag_magn_phase_max){
+        case  0://显示幅度谱
+            if(display_reset_flag){
+                Init_gra();
+                update_value_level();
+                update_show_num();
+                display_reset_flag=0;
+            }
+            for(i=0;i<100;i++){
+                show_data_x=(long)(0.053333333*(freq_min+(freq_max-freq_min)*i));
+                show_data_y=(long)(final[show_data_x]*144/18000);
+                show_data_y/=magn_change_level;
+                if(show_data_y<0) show_data_y=0;
+                finally[i]=show_data_y;
+                //ShowPoint(8+show_data_y,16+i);
+            }
+            Delay(100);//延迟减缓闪屏,增强视觉体验
+            if(freq_change_flag){
+                update_show_num();
+                freq_change_flag=0;
+            }
+            if(magn_change_flag){
+                update_value_level();
+                magn_change_flag=0;
+            }
+            LCDClear();
+            for(i=0;i<100;i++){
+                ShowPoint_magn(16+i,8+finally[i]);
+            }
+               break;
+        case  1://显示相位谱
+            if(display_reset_flag){
+                Init_phase();
+                Show0_20k();
+                display_reset_flag=0;
+            }
+            final_phase[0]=0;
+            for(i=1;i<128;i++){
+                final_phase[i]=(int)((atan(sample[2*i]/sample[2*i+1])+1.571)*16.55);
+            }
+            for(i=0;i<100;i++){
+                show_data_x=(long)(1.066666666666*i);
+                show_data_y1=(final_phase[show_data_x]);
+                finally_phase[i]=(int)show_data_y1;
+            }
+            LCDClear();
+            for(i=0;i<100;i++){
+                /*ShowPoint(35+finally_phase[i],16+i);*/
+                ShowPoint(9+finally_phase[i],16+i);
+            }
+
+            break;
         }
 
-        if(magn_change_flag){
-            update_value_level();
-            magn_change_flag=0;
-        }
-        LCDClear();
-
-
-        for(i=0;i<100;i++){
-            //ShowPoint(8+finally[i],16+i);
-            ShowPoint_magn(16+i,8+finally[i]);
-        }
 
     }
 }
