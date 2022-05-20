@@ -336,8 +336,23 @@ void Show8_18k(){
     ShowNum(93,7,1);
     ShowNum(98,7,6);
 }
-extern int magn_flag;
+extern int magn_flag,magn_change_level;
 extern int freq_max,freq_min,value_max;
+
+void update_value_level(){
+    switch(magn_change_level){
+    case 3:
+        Show_369();
+        break;
+    case 2:
+        Show_246();
+        break;
+    case 1:
+        Show_123();
+        break;
+    }
+}
+
 void update_show_num(){
 
     int i;

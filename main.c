@@ -19,7 +19,7 @@ int magn_flag=1;
 int freq_min=0,value_max=90;
 int freq_max;
 long show_data_x,show_data_y;
-int freq_change_flag=0;
+int freq_change_flag=0,magn_change_level=3,magn_change_flag=0;
 void main()
 {
     PLL_Init(24);
@@ -32,6 +32,7 @@ void main()
     lcdInit();
     Init_gra();
     Show_369();
+    update_value_level();
     update_show_num();
 /*    ShowPoint(40,16+);
     while(1);*/
@@ -44,7 +45,9 @@ void main()
         }
         for(i=0;i<100;i++){
             show_data_x=(long)(0.053333333*(freq_min+(freq_max-freq_min)*i));
-            show_data_y=(long)(final[show_data_x]*value_max/18000);
+            show_data_y=(long)(final[show_data_x]*144/18000);
+            show_data_y/=magn_change_level;
+                //if(show_data_y<=0) show_data_y=0;
             finally[i]=show_data_y;
             //ShowPoint(8+show_data_y,16+i);
         }
@@ -52,6 +55,11 @@ void main()
         if(freq_change_flag){
             update_show_num();
             freq_change_flag=0;
+        }
+
+        if(magn_change_flag){
+            update_value_level();
+            magn_change_flag=0;
         }
         LCDClear();
 

@@ -27,3 +27,4 @@ void Show8_18k();
 void LCDClear();
 void LCDFull_all();
 void ShowPoint_magn(int i,int j);
+void update_value_level();
