@@ -4,7 +4,7 @@
 #define LCDDELAY 1
 void lcdInit()//初始化LCD屏幕
 {
-    //TurnOnLCD();                // 打开显示
+    TurnOnLCD();                // 打开显示
     LCDCLS();               // 清除显示内存
     CTRLCDCMDR=LCDCMDSTARTLINE;     // 设置显示起始行
     Delay(LCDDELAY);
@@ -15,9 +15,9 @@ void lcdInit()//初始化LCD屏幕
 void setpage(int page)                  // 设置操作页
 {
     CTRLCDCMDR=LCDCMDPAGE+7-page;
-    Delay(1);
+    Delay(LCDDELAY);
     CTRLCDCR=0;
-    Delay(1);
+    Delay(LCDDELAY);
 }
 void setcolumn(int column)              //设置列
 {
@@ -40,24 +40,24 @@ void ShowSpace(int x,int y)
         unsigned char space[5] = {0x00,0x00,0x00,0x00,0x00};
         Left_or_Right=x;//变量Left_or_Right用来判断处于左右半屏的哪一块，统一屏幕显示代码
         CTRLCDCMDR=LCDCMDPAGE+y;  //选页
-        Delay(1);
+        Delay(LCDDELAY);
         CTRLCDCR=0;
         if(Left_or_Right<64)
                 CTRLCDCMDR=LCDCMDVERADDRESS+x;  // 起始列
         else
                 CTRLCDCMDR=LCDCMDVERADDRESS+x-64;   //右半屏额外-64
-        Delay(1);
+        Delay(LCDDELAY);
         CTRLCDCR=0;
-        Delay(1);
+        Delay(LCDDELAY);
         for(j=0;j<5;j++)
         {
                 if(Left_or_Right<64)
                     CTRLCDLCR =  space[j];//左半屏数据写入
                 else
                     CTRLCDRCR =  space[j];//右半屏数据写入
-                Delay(1);
+                Delay(LCDDELAY);
                 CTRLCDCR=0;
-                Delay(1);
+                Delay(LCDDELAY);
         }
 }
 unsigned char ledpoint[8]={0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};//ledpoint[8]为由下到上依次点亮一个像素点数组
@@ -91,6 +91,46 @@ void ShowPoint(int i,int j)             //画单点函数
             }
         }
     }
+
+
+unsigned char ledpoint_magn[8]={0x80,0xC0,0xE0,0xF0,0xF8,0xFC,0xFE,0xFF};//ledpoint[8]为由下到上依次点亮一个像素点数组
+void ShowPoint_magn(int i,int j)             //画单点函数
+{
+    int k;
+    for(k=1;k<j/8;k++){
+        setpage(k);
+        if(i<64)
+        {
+            setcolumn(i);
+            printleft(0xFF);
+            Delay(LCDDELAY);
+        }
+        else
+        {
+            setcolumn(i-64);
+            printright(0xFF);
+            Delay(LCDDELAY);
+        }
+    }
+
+    setpage(j/8);
+    if(i<64)
+    {
+        setcolumn(i);
+        printleft(ledpoint_magn[j%8]);
+        Delay(LCDDELAY);
+    }
+    else
+    {
+        setcolumn(i-64);
+        printright(ledpoint_magn[j%8]);
+        Delay(LCDDELAY);
+    }
+
+}
+
+
+
 
 void full(int page,int column)          //填充1页1列
 {
@@ -156,6 +196,52 @@ void ShowNum(int x,int y,int num)
         }
     }
 }
+void Init_gra()
+{
+    int i,j;
+    for(i=0;i<8;i++)
+                {
+                    CTRLCDCMDR=LCDCMDPAGE+i;   //选页
+                    Delay(LCDDELAY);
+                    CTRLCDCR=0;
+                    Delay(LCDDELAY);
+                    for(j=0;j<64;j++)
+                    {
+                       CTRLCDCMDR=LCDCMDVERADDRESS+j;    // 起始列
+                       Delay(LCDDELAY);
+                   //    Delay(LCDDELAY);
+                       CTRLCDCR=0;
+                       Delay(LCDDELAY);
+                       CTRLCDLCR =  graL[i][j];//所以调用右半屏的写入函数
+                       Delay(LCDDELAY);
+                   //    Delay(LCDDELAY);
+                       CTRLCDCR=0;
+                       Delay(LCDDELAY);
+                   //    Delay(LCDDELAY);
+                    }
+                }
+        for(i=0;i<8;i++)
+            {
+                CTRLCDCMDR=LCDCMDPAGE+i;   //选页
+                Delay(LCDDELAY);
+                CTRLCDCR=0;
+                for(j=0;j<64;j++)
+                {
+                   CTRLCDCMDR=LCDCMDVERADDRESS+j;    // 起始列
+                   Delay(LCDDELAY);
+                  // Delay(LCDDELAY);
+                   CTRLCDCR=0;
+                  Delay(LCDDELAY);
+                   CTRLCDRCR =  graR[i][j];//所以调用右半屏的写入函数
+                   Delay(LCDDELAY);
+                  // Delay(LCDDELAY);
+                   CTRLCDCR=0;
+                   Delay(LCDDELAY);
+                 //  Delay(LCDDELAY);
+                }
+            }
+}
+
 void Show_123(){
     ShowNum(0,1,3);
     ShowNum(5,1,0);
@@ -163,7 +249,7 @@ void Show_123(){
     ShowNum(5,3,0);
     ShowNum(0,5,1);
     ShowNum(5,5,0);
-    ShowNum(5,7,0);
+    ShowNum(1,7,0);
 }
 void Show_246(){
     ShowNum(0,1,6);
@@ -172,7 +258,7 @@ void Show_246(){
     ShowNum(5,3,0);
     ShowNum(0,5,2);
     ShowNum(5,5,0);
-    ShowNum(5,7,0);
+    ShowNum(1,7,0);
 }
 
 void Show_369(){
@@ -182,6 +268,175 @@ void Show_369(){
     ShowNum(5,3,0);
     ShowNum(0,5,3);
     ShowNum(5,5,0);
-    ShowNum(5,7,0);
+    ShowNum(1,7,0);
 }
 
+void Show0_20k(){
+    ShowNum(11,7,0);
+    ShowNum(31,7,4);
+    ShowSpace(36,7);
+    ShowNum(51,7,8);
+    ShowSpace(56,7);
+    ShowNum(71,7,1);
+    ShowNum(76,7,2);
+    ShowNum(93,7,1);
+    ShowNum(98,7,6);
+}
+void Show0_10k(){
+    ShowNum(11,7,0);
+    ShowNum(31,7,2);
+    ShowNum(51,7,4);
+    ShowSpace(56,7);
+    ShowNum(71,7,6);
+    ShowSpace(76,7);
+    ShowNum(93,7,8);
+    ShowSpace(98,7);
+}
+void Show2_12k(){
+    ShowNum(11,7,2);
+    ShowNum(31,7,4);
+    ShowSpace(36,7);
+    ShowNum(51,7,6);
+    ShowSpace(56,7);
+    ShowNum(71,7,8);
+    ShowSpace(76,7);
+    ShowNum(93,7,1);
+    ShowNum(98,7,0);
+}
+void Show4_14k(){
+    ShowNum(11,7,4);
+    ShowNum(31,7,6);
+    ShowSpace(36,7);
+    ShowNum(51,7,8);
+    ShowSpace(56,7);
+    ShowNum(71,7,1);
+    ShowNum(76,7,0);
+    ShowNum(93,7,1);
+    ShowNum(98,7,2);
+}
+void Show6_16k(){
+    ShowNum(11,7,6);
+    ShowNum(31,7,8);
+    ShowSpace(36,7);
+    ShowNum(51,7,1);
+    ShowNum(56,7,0);
+    ShowNum(71,7,1);
+    ShowNum(76,7,2);
+    ShowNum(93,7,1);
+    ShowNum(98,7,4);
+}
+void Show8_18k(){
+    ShowNum(11,7,8);
+    ShowNum(31,7,1);
+    ShowNum(36,7,0);
+    ShowNum(51,7,1);
+    ShowNum(56,7,2);
+    ShowNum(71,7,1);
+    ShowNum(76,7,4);
+    ShowNum(93,7,1);
+    ShowNum(98,7,6);
+}
+extern int magn_flag;
+extern int freq_max,freq_min,value_max;
+void update_show_num(){
+
+    int i;
+    setpage(0);
+    for(i=16;i<110;i++){
+        if(i<64)
+        {
+            setcolumn(i);
+            printleft(0x00);
+        }
+        else
+        {
+            setcolumn(i-64);
+            printright(0x00);
+        }
+    }
+
+
+
+    int shiwei,gewei;
+    shiwei=freq_min/10;
+    gewei=freq_min%10;
+    if(shiwei !=0)
+        ShowNum(11,7,shiwei);
+    ShowNum(16,7,gewei);
+    shiwei=(freq_min+magn_flag)/10;
+    gewei=(freq_min+magn_flag)%10;
+    if(shiwei !=0)
+        ShowNum(31,7,shiwei);
+    ShowNum(36,7,gewei);
+    shiwei=(freq_min+magn_flag*2)/10;
+    gewei=(freq_min+magn_flag*2)%10;
+    if(shiwei !=0)
+        ShowNum(51,7,shiwei);
+    ShowNum(56,7,gewei);
+    shiwei=(freq_min+magn_flag*3)/10;
+    gewei=(freq_min+magn_flag*3)%10;
+    if(shiwei !=0)
+        ShowNum(71,7,shiwei);
+    ShowNum(76,7,gewei);
+    shiwei=(freq_min+magn_flag*4)/10;
+    gewei=(freq_min+magn_flag*4)%10;
+    if(shiwei !=0)
+        ShowNum(93,7,shiwei);
+    ShowNum(98,7,gewei);
+}
+
+void LCDClear()
+{
+    int i,j;
+
+    for ( i=0;i<6;i++ )
+    {
+        setpage(7-i);
+
+        for (j=16;j<64;j++ ){
+            setcolumn(j);
+            printleft(0);
+            Delay(1);
+        }
+
+        setpage(7-i);
+        LCDCMD(LCDCMDVERADDRESS);
+        for (j=0;j<64;j++ ){
+            setcolumn(j);
+            printright(0);
+            Delay(1);
+        }
+
+    }
+    setpage(1);
+    for (j=16;j<64;j++ ){
+        setcolumn(j);
+        printleft(0x80);
+        Delay(1);
+    }
+    setpage(1);
+    for (j=0;j<52;j++ ){
+        setcolumn(j);
+        printright(0x80);
+        Delay(1);
+    }
+
+
+}
+
+void LCDFull_all()
+{
+    int i,j;
+    LCDCMD(LCDCMDSTARTLINE);
+    for ( i=0;i<8;i++ )
+    {
+        LCDCMD(LCDCMDPAGE+i);
+        LCDCMD(LCDCMDVERADDRESS);
+        for ( j=0;j<64;j++ )
+            LCDWriteLeft(0xff);
+        LCDCMD(LCDCMDPAGE+i);
+        LCDCMD(LCDCMDVERADDRESS);
+        for ( j=0;j<64;j++ )
+            LCDWriteRight(0xff);
+    }
+}

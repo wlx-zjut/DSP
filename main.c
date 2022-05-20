@@ -13,21 +13,28 @@ void wait( unsigned int cycles );
 void EnableAPLL( );
 extern short sample[256];
 long final[128];
-
+long finally[100];
 int i;
+int magn_flag=1;
+int freq_min=0,value_max=90;
+int freq_max;
+long show_data_x,show_data_y;
+int freq_change_flag=0;
 void main()
 {
-    PLL_Init(60);
+    PLL_Init(24);
     SDRAM_init();
+    freq_max=freq_min+magn_flag*5;
     INTR_init();
     InitCTR();
     AIC23_Init();
     AIC23_Mixer_Init();
     lcdInit();
-    Show_123();
-    Show_246();
+    Init_gra();
     Show_369();
-    LCDCLS();
+    update_show_num();
+/*    ShowPoint(40,16+);
+    while(1);*/
     while(1){
         AIC23_Mixer();
         AIC23_Mixer();
@@ -35,6 +42,25 @@ void main()
         for(i=0;i<128;i++){
            final[i]=sqrt((long)sample[2*i]*(long)sample[2*i]+(long)sample[2*i+1]*(long)sample[2*i+1]);
         }
+        for(i=0;i<100;i++){
+            show_data_x=(long)(0.053333333*(freq_min+(freq_max-freq_min)*i));
+            show_data_y=(long)(final[show_data_x]*value_max/18000);
+            finally[i]=show_data_y;
+            //ShowPoint(8+show_data_y,16+i);
+        }
+        Delay(100);//延迟减缓闪屏,增强视觉体验
+        if(freq_change_flag){
+            update_show_num();
+            freq_change_flag=0;
+        }
+        LCDClear();
+
+
+        for(i=0;i<100;i++){
+            //ShowPoint(8+finally[i],16+i);
+            ShowPoint_magn(16+i,8+finally[i]);
+        }
+
     }
 }
 void wait( unsigned int cycles )

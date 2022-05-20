@@ -4,11 +4,31 @@
 //#include "5509.h"
 int scanKey=0;
 unsigned int ncode;
+extern int magn_flag;
+extern int freq_max,freq_min,value_max,freq_change_flag;
 void interrupt XINT2()
 {
 	scanKey=GetKey(); //Getkey函数获得键盘值并放入该变量中，以做消抖处理
 	scanKey&=0x0ff; //获取键盘值
 //	Keyshift();
+	if(scanKey==4  &&  magn_flag>1){
+	        magn_flag--;
+
+	        freq_max=freq_min+magn_flag*5;
+	        freq_change_flag=1;
+	        //Init_gra();
+	        //Show_369();
+
+	    }
+    if(scanKey==6  &&  (freq_min+(magn_flag+1)*5)<=20 ){
+            magn_flag++;
+            freq_max=freq_min+magn_flag*5;
+            freq_change_flag=1;
+            //Init_gra();
+            //Show_369();
+
+
+    }
 }
 
 void INTR_init( void )
