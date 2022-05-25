@@ -428,23 +428,23 @@ void update_show_num(){
     shiwei=(freq_min+magn_flag)/10;
     gewei=(freq_min+magn_flag)%10;
     if(shiwei !=0)
-        ShowNum(31,7,shiwei);
-    ShowNum(36,7,gewei);
+        ShowNum(32,7,shiwei);
+    ShowNum(37,7,gewei);
     shiwei=(freq_min+magn_flag*2)/10;
     gewei=(freq_min+magn_flag*2)%10;
     if(shiwei !=0)
-        ShowNum(51,7,shiwei);
-    ShowNum(56,7,gewei);
+        ShowNum(53,7,shiwei);
+    ShowNum(58,7,gewei);
     shiwei=(freq_min+magn_flag*3)/10;
     gewei=(freq_min+magn_flag*3)%10;
     if(shiwei !=0)
-        ShowNum(71,7,shiwei);
-    ShowNum(76,7,gewei);
+        ShowNum(74,7,shiwei);
+    ShowNum(79,7,gewei);
     shiwei=(freq_min+magn_flag*4)/10;
     gewei=(freq_min+magn_flag*4)%10;
     if(shiwei !=0)
-        ShowNum(93,7,shiwei);
-    ShowNum(98,7,gewei);
+        ShowNum(95,7,shiwei);
+    ShowNum(100,7,gewei);
 }
 
 void LCDClear()
@@ -458,15 +458,15 @@ void LCDClear()
         for (j=16;j<64;j++ ){
             setcolumn(j);
             printleft(0);
-            Delay(1);
+/*            Delay(1);*/
         }
 
         setpage(7-i);
-        LCDCMD(LCDCMDVERADDRESS);
+/*        LCDCMD(LCDCMDVERADDRESS);*/
         for (j=0;j<64;j++ ){
             setcolumn(j);
             printright(0);
-            Delay(1);
+/*            Delay(1);*/
         }
 
     }
@@ -474,13 +474,12 @@ void LCDClear()
     for (j=16;j<64;j++ ){
         setcolumn(j);
         printleft(0x80);
-        Delay(1);
+/*        Delay(1);*/
     }
-    setpage(1);
-    for (j=0;j<52;j++ ){
+    for (j=0;j<56;j++ ){
         setcolumn(j);
         printright(0x80);
-        Delay(1);
+/*        Delay(1);*/
     }
 
 

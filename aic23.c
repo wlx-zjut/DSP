@@ -114,7 +114,7 @@ void AIC23_Init()
     // 数字音频接口主模式    输入长度16位     DSP初始化
     // 采样率控制 48KHz 比较常用   SRC_BOSR为272fs  USB clock
     AIC23_Write(AIC23_DIGITAL_IF_FORMAT, DIGIF_FMT_MS | DIGIF_FMT_IWL_16 | DIGIF_FMT_FOR_DSP);
-    AIC23_Write(AIC23_SAMPLE_RATE_CTL, 0x01);
+    AIC23_Write(AIC23_SAMPLE_RATE_CTL, 0x00);
 
     // 打开耳机声道音量和数字接口激活
     AIC23_Write(AIC23_LT_HP_CTL, 0x1ff);  //激活 衰减+6dB 零点检测  开启
@@ -142,7 +142,8 @@ PC55XX_MCSP pMCBSP0 = (PC55XX_MCSP)C55XX_MSP0_ADDR;
 int nWork;
 FARPTR lpWork;
 long int luWork,luWork1;
-short sample[256];
+short sample_512[512];
+short sample_256[256];
 void AIC23_Mixer_Init(){
     lpWork=lpAudio=AUDIOBUFFER; luWork=0;      //音频缓冲区
       for ( luWork1=0;luWork1<512;luWork1++ )
@@ -154,7 +155,7 @@ void AIC23_Mixer()
 {
     while (!ReadMask(pMCBSP0 -> spcr2, SPCR2_XRDY));
     lpWork=lpAudio;
-    for(luWork=0;luWork<256;luWork++){
+    for(luWork=0;luWork<512;luWork++){
         while(!ReadMask(pMCBSP0 -> spcr2, SPCR2_XRDY)); // 等待McBSP0准备好
         nWork=Read(pMCBSP0->drr2);  // 读取左右声道的数据到nWork
         nWork=Read(pMCBSP0->drr1);  // 这里假设两个声道相同，所以都输入到nWork，其中一个声道是被覆盖的。
@@ -162,7 +163,8 @@ void AIC23_Mixer()
         far_poke(lpWork++,nWork);   // 读取的左右声道数据保存到缓冲区lpWork
         Write(pMCBSP0->dxr2,nWork); // 送数据到McBSP0，声音输出由AIC23完成
         Write(pMCBSP0->dxr1,nWork); // 这里两个声道相同，都从nWork输出。
-        sample[luWork]=nWork;
+        sample_512[luWork]=(short)(nWork);
+        if(luWork<256)  sample_256[luWork]=(short)(nWork);
 
     }
 }

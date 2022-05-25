@@ -2,7 +2,7 @@
 #include "util.h"
 #include "func.h"
 #include <dsplib.h>
-#include <TMS320.H>
+#include <tms320.H>
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
@@ -11,13 +11,15 @@
 #include <key.h>
 void wait( unsigned int cycles );
 void EnableAPLL( );
-extern short sample[256];
-long final[128];
+extern short sample_512[512];
+extern short sample_256[256];
+long final_256[256];
+long final_128[128];
 double final_phase[128];
-int finally_phase[100];
-long finally[100];
+int finally_phase[105];
+long finally[105];
 int i;
-int magn_flag=1;
+int magn_flag=4;
 int freq_min=0,value_max=90;
 int freq_max;
 int index,result_max;
@@ -29,7 +31,7 @@ int wan,qian,bai,shi,ge;
 double show_data_y1;
 void main()
 {
-    PLL_Init(24);
+    PLL_Init(20);
     SDRAM_init();
     freq_max=freq_min+magn_flag*5;
     INTR_init();
@@ -44,11 +46,18 @@ void main()
     while(1){
         AIC23_Mixer();
         AIC23_Mixer();
-        rfft(sample,256,SCALE);
-        final[0]=sample[0];
-        for(i=1;i<128;i++){
-           final[i]=sqrt((long)sample[2*i]*(long)sample[2*i]+(long)sample[2*i+1]*(long)sample[2*i+1]);
+        AIC23_Mixer();
+        rfft(sample_512,512,SCALE);
+        rfft(sample_256,256,SCALE);
+        final_256[0]=sample_512[0];
+        final_128[0]=sample_256[0];
+        for(i=1;i<256;i++){
+            final_256[i]=(long)sqrt((double)(sample_512[2*i])*(double)(sample_512[2*i])+(double)(sample_512[2*i+1])*(double)(sample_512[2*i+1]));
         }
+        for(i=1;i<128;i++){
+            final_128[i]=(long)sqrt((double)(sample_256[2*i])*(double)(sample_256[2*i])+(double)(sample_256[2*i+1])*(double)(sample_256[2*i+1]));
+        }
+
         switch(flag_magn_phase_max){
         case  0://显示幅度谱
             if(display_reset_flag){
@@ -57,15 +66,35 @@ void main()
                 update_show_num();
                 display_reset_flag=0;
             }
-            for(i=0;i<100;i++){
-                show_data_x=(long)(5.3333333*(freq_min+(freq_max-freq_min)*1.0*i/100));
-                show_data_y=(long)(final[show_data_x]*144/18000);
-                show_data_y/=magn_change_level;
-                if(show_data_y<0) show_data_y=0;
-                finally[i]=show_data_y;
-                //ShowPoint(8+show_data_y,16+i);
+            if(magn_flag==4){
+                for(i=0;i<105;i++){
+                    show_data_y=(long)(final_128[i]*144/18000);
+                    show_data_y/=magn_change_level;
+                    if(show_data_y<0) show_data_y=0;
+                    finally[i]=show_data_y;
+                }
             }
-            Delay(100);//延迟减缓闪屏,增强视觉体验
+            if(magn_flag==2){
+                for(i=0;i<105;i++){
+                    show_data_x=(long)((freq_min*256.0/24)+i);
+                    show_data_y=(long)(final_256[show_data_x]*144/18000);
+                    show_data_y/=magn_change_level;
+                    if(show_data_y<0) show_data_y=0;
+                    finally[i]=show_data_y;
+                }
+            }
+
+            if(magn_flag==1){
+                for(i=0;i<105;i++){
+                    show_data_x=(long)((freq_min*256.0/24)+0.5*i);
+                    show_data_y=(long)(final_256[show_data_x]*144/18000);
+                    show_data_y/=magn_change_level;
+                    if(show_data_y<0) show_data_y=0;
+                    finally[i]=show_data_y;
+                }
+            }
+
+
             if(freq_change_flag){
                 update_show_num();
                 freq_max=freq_min+magn_flag*5;
@@ -77,7 +106,7 @@ void main()
             }
 
             LCDClear();
-            for(i=0;i<100;i++){
+            for(i=0;i<105;i++){
                 ShowPoint_magn(16+i,8+finally[i]);
             }
             if(insert_flag_freq_change){
@@ -96,17 +125,15 @@ void main()
             }
             final_phase[0]=0;
             for(i=1;i<128;i++){
-                /*final_phase[i]=(int)((atan(sample[2*i]/sample[2*i+1])+1.571)*16.55);*/
-                final_phase[i]=(atan(sample[2*i]*1.0/sample[2*i+1]));
+
+                final_phase[i]=(long)(atan((double)(sample_256[2*i])*1.0/(double)(sample_256[2*i+1])));
             }
-            for(i=0;i<100;i++){
-                show_data_x=(long)(1.066666666666*i);
-                show_data_y1=((final_phase[show_data_x]+1.571)*16.55);
+            for(i=0;i<105;i++){
+                show_data_y1=((final_phase[i]+1.571)*16.55);
                 finally_phase[i]=(int)(show_data_y1);
             }
             LCDClear();
-            for(i=0;i<100;i++){
-                /*ShowPoint(35+finally_phase[i],16+i);*/
+            for(i=0;i<105;i++){
                 ShowPoint(9+finally_phase[i],16+i);
             }
             break;
@@ -120,12 +147,12 @@ void main()
                 display_reset_flag=0;
             }
             index = 0;              //假设a[0]为最大值，index存储最大值下标；
-            for(i = 1; i < 128; i++){
-              if(final[i]>final[index]){   //如果a[i]比假设的的最大值还大，
+            for(i = 1; i < 256; i++){
+              if(final_256[i]>final_256[index]){   //如果a[i]比假设的的最大值还大，
                 index = i;           //再假设a[i]是新的最大值；
               }
             }
-            result_max=(int)(index*187.5);
+            result_max=(int)(index*24000.0/256);
             wan=result_max/10000;
             qian=(result_max/1000)%10;
             bai=(result_max/100)%10;

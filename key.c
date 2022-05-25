@@ -35,11 +35,13 @@ void interrupt XINT2()
 
 	if(scanKey==4  &&  magn_flag>1){
 	        magn_flag--;
+	        if(magn_flag==3) magn_flag=1;
 	        freq_max=freq_min+magn_flag*5;
 	        freq_change_flag=1;
 	    }
     if(scanKey==6  &&  (freq_min+(magn_flag+1)*5)<=20 ){
             magn_flag++;
+            if(magn_flag==3) magn_flag=4;
             freq_max=freq_min+magn_flag*5;
             freq_change_flag=1;
     }
